@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} 数据导入 {% endblock %}
+{% block link %} <link rel="stylesheet" href="{% static 'stu_table/css/style.css' %}">{% endblock %}
+{% block content %}
+<body class="form-wrap">
+          
+<div class=" layui-fluid  layui-bg-white">
+  <blockquote class="layui-elem-quote">为节省服务器开销，服务器并不会保留您的文件.</blockquote>   
+  <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+    <legend>选择文件导入数据</legend>
+  </fieldset>
+  
+  <div class="layui-upload">
+    <button type="button" class="layui-btn layui-btn-normal" id="test8">选择文件</button>
+    <button type="button" class="layui-btn" id="test9">开始导入</button>
+  </div>
+  </div>
+</body>
+<div class="anomaly">
+</div>
+{% endblock %}       
+<!-- <script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script> -->
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+{% block script %}
+<script>
+layui.use('upload', function(){
+  var $ = layui.jquery
+  ,upload = layui.upload;
+  //选完文件后不自动上传
+  upload.render({
+    elem: '#test8'
+    ,url: '{% url "stu_table:merge" %}'
+    ,exts: 'xls|excel|xlsx'
+    ,auto: false
+    //,multiple: true
+    ,bindAction: '#test9'
+    ,done: function(res){
+      if (res['static'] == "error"){
+        layui.use('layer', function(){
+          var layer = layui.layer;
+          layer.msg('出现错误');
+        });  
+      }else if(res['static'] != "success"){
+        $('.anomaly').load('{% url "stu_table:anomaly" %}', {"static": res['static'], "data_list": JSON.stringify(res['data_list']), "eng_list": JSON.stringify(res['query_data']), 'title': JSON.stringify(res['title'])})
+      }else if(res['static'] == "success"){
+        layer.msg('导入成功', {icon: 1});
+      }
+    }
+  });
+});
+
+
+
+// 导入数据
+function delAll (argument) {
+
+var data = tableCheck.getData();
+var eng_list = $("#eng_list").text()
+// alert(eng_list)
+
+layer.confirm('确认要导入吗？'+data,function(index){
+    $.ajax({
+      url: "{% url 'stu_table:replenish' %}",
+      type: "POST",
+      data: {"data": JSON.stringify(data), 'eng_list': JSON.stringify(eng_list)},
+      cache: false,
+      success: function(data){
+        var a = $('.num').text();
+        $('.num').text(a - data['count']);
+        layer.msg('导入成功', {icon: 1});
+        $(".layui-form-checked").not('.header').parents('tr').remove();
+      },
+      error: function(xhr){
+        layer.msg('导入失败', {icon: 5});
+      }
+    });
+    //捉到所有被选中的，发异步进行删除
+    
+});
+}
+</script>
+{% endblock %}

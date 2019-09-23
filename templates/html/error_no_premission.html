@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- 定时跳转 -->
+    <meta http-equiv="refresh" content="5;url={{ from_url }}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{% static 'css/error.css' %}">
+    <title>error</title>
+</head>
+<body>
+    <div class="img">
+        <img src="{% static 'images/no_premission.gif' %}" alt="" srcset=""></br>
+        <span>你没有访问该页面的权限</span><a href="{{ from_url }}">&nbsp&nbsp<span id="spanId">5</span>&nbsp&nbsp秒后系统会自动跳转，也可点击本处直接跳</a></span>
+    </div>
+</body>
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+    // 页面一加载完成，该方法就会执行
+    // 读秒，一秒钟数字改变一次
+    $(document).ready(function(){
+        run()
+    })
+    var x = 5;
+    function run(){
+        // 获取到的是span标签的对象
+        $('#spanId').text(x)
+        x--;
+        // 再让run方法执行呢，一秒钟执行一次
+        window.setTimeout("run()", 1000);
+    }
+</script>
+</html>
