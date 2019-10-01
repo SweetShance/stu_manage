@@ -86,14 +86,18 @@ class ExcelOperate():
     def create_field(self, field, filedType):
         conn = self.conn_mysql()
         cur = conn.cursor()
+        # 字符串
         if filedType == 1:
             cur.execute("alter table stu_table_stu_base_message add %s varchar(100) " %field)
+        # 数字
         elif filedType == 2:
             cur.execute("alter table stu_table_stu_base_message add %s int " %field)
+        # 日期
         elif filedType == 3:
             cur.execute("alter table stu_table_stu_base_message add %s DATA " %field)
+        # 布尔类型
         elif filedType == 4:
-            cur.execute("alter table stu_table_stu_base_message add %s tinyint " %field)
+            cur.execute("alter table stu_table_stu_base_message add %s tinyint " %field)    
         else:
             cur.execute("alter table stu_table_stu_base_message add %s varchar(100) " %field)
         conn.commit()
@@ -101,7 +105,7 @@ class ExcelOperate():
         conn.close()
     
     # 更新数据
-    def update_data(self, default=None):
+    def update_data(self):
         # 根据学号筛选
         
         # 获取该模型的所有字段名
@@ -113,7 +117,7 @@ class ExcelOperate():
         cur = conn.cursor()
         # 信息异常修改处理
         objects= Stu_base_message.objects.filter(sno=self.name_data['sno'])
-        if not default and  objects:
+        if objects:
             obj =  objects.first()
             if obj.sname != None and obj.sname !=self.name_data['sname']:
                 self.query_list.append(self.row_data)
@@ -136,7 +140,8 @@ class ExcelOperate():
                 self.error = "班级"
                 return '班级'
         # obj = Stu_base_message.objects.filter(sno=self.name_data['sno']).first()
-        if not  objects:
+        
+        if not objects:
             # 如果没有就创建
             obj = Stu_base_message.objects.create(sno=self.name_data['sno'])
         else:
@@ -146,9 +151,10 @@ class ExcelOperate():
             index = self.eng_name.index(field)
             
             if field == "stu_class":
+                print(field)
                 stu_id = Stu_class.objects.get(class_name__contains=self.name_data[field]).id
                 cur.execute("update stu_table_stu_base_message set stu_class_id = %s where sno=%s"%(stu_id, self.name_data['sno']))
-            
+
             
             # print("update stu_table_stu_base_message set %s = '%s' where sno=%s"%(field, self.name_data[field], self.name_data['sno']))
            
@@ -163,6 +169,7 @@ class ExcelOperate():
             conn.commit()
         cur.close()
         conn.close()
+        
         # 保存导数据库
         # obj.save()
 
@@ -233,7 +240,7 @@ def search_fields_list():
     fields_list[index] = "class_name"
     # 加入学院
     fields_list.insert(index, "coolege_name")
-    return fields_list, cur
+    return fields_list, cur, conn
 
 
 def search_zh_fields_list(fields_list):
@@ -247,7 +254,7 @@ def search_zh_fields_list(fields_list):
 
 def paginator_utils(data_list, page):
     # 设置一页内容显示多少, 一页显示50条数据
-    paginator = Paginator(data_list, 5)
+    paginator = Paginator(data_list, 50)
     # 获取页码
     page_of_data = paginator.get_page(page)
 

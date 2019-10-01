@@ -24,7 +24,7 @@ class Stu_base_message(models.Model):
 class Stu_class(models.Model):
     class_name = models.CharField(verbose_name="班级", max_length=50)
     # 学院
-    coolege_name = models.ForeignKey('Coolege', verbose_name="学院", on_delete=models.CASCADE)
+    coolege_name = models.ForeignKey('Coolege', verbose_name="学院", on_delete=models.CASCADE, related_name="class_name")
     add_time = models.DateField(verbose_name="添加时间", auto_now_add=True)
     class Meta:
         verbose_name_plural = "班级"
@@ -35,7 +35,7 @@ class Stu_class(models.Model):
 
 class Coolege(models.Model):    
     coolege_name = models.CharField(verbose_name="学院", max_length=50)
-    add_time = models.DateField(verbose_name="添加时间", auto_now_add=True)
+    add_time = models.DateField(verbose_name="添加时间", auto_now_add=True, )
     class Meta:
         verbose_name_plural = "学院"
     

@@ -1,129 +1,48 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block link %}
+  <link rel="stylesheet" href="{% static 'stu_table/css/style.css' %}">
+{% endblock %}
 {% block content %}
   <body>
     <div class="x-nav">
       <span class="layui-breadcrumb">
-        <a href="">首页</a>
-        <a href="">演示</a>
-        <a>
-          <cite>导航元素</cite></a>
+      
+        <a href="javascript:;" class="first_page">首页</a>
       </span>
       <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" href="javascript:location.replace(location.href);" title="刷新">
         <i class="layui-icon" style="line-height:38px">ဂ</i></a>
     </div>
     <div class="x-body">
       <div class="layui-row">
-        <form class="layui-form layui-col-md12 x-so">
-          <input class="layui-input" placeholder="开始日" name="start" id="start">
-          <input class="layui-input" placeholder="截止日" name="end" id="end">
+        <form class="layui-form layui-col-md12 x-so search-form">
           <div class="layui-input-inline">
-            <select name="contrller">
-              <option>支付状态</option>
-              <option>已支付</option>
-              <option>未支付</option>
-            </select>
+
+              {% if role != "班长" %}
+              <select name="choice_college" lay-filter="choice-college">
+                  <option value="">请选择学院</option>
+                  {% for college in colleges %}
+                    <option value="{{ college.pk }}">{{ college }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="layui-input-inline">
+                <select name="choice_class" class="choice-class" lay-filter="choice-class">
+                  <option value="">请选择班级</option>
+                  <!-- {% for college in colleges %}
+                    <option value="{{ college.pk }}">{{ college }}</option>
+                  {% endfor %} -->
+                </select>
+            {% endif %}
           </div>
-          <div class="layui-input-inline">
-            <select name="contrller">
-              <option>支付方式</option>
-              <option>支付宝</option>
-              <option>微信</option>
-              <option>货到付款</option>
-            </select>
+          <div class="search-div">
+            <input type="text" name="stu_name"  placeholder="请输入学生学号或姓名" autocomplete="off" class="layui-input search_input">
+            <button class="layui-btn search" ><i class="layui-icon">&#xe615;</i></button>
           </div>
-          <div class="layui-input-inline">
-            <select name="contrller">
-              <option value="">订单状态</option>
-              <option value="0">待确认</option>
-              <option value="1">已确认</option>
-              <option value="2">已收货</option>
-              <option value="3">已取消</option>
-              <option value="4">已完成</option>
-              <option value="5">已作废</option>
-            </select>
-          </div>
-          <input type="text" name="username"  placeholder="请输入订单号" autocomplete="off" class="layui-input">
-          <button class="layui-btn"  lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
         </form>
       </div>
-      <xblock>
-        <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>分享</button>
-        <button class="layui-btn" onclick="x_admin_show('添加用户','./order-add.html')"><i class="layui-icon"></i>添加</button>
-        <span class="x-right" style="line-height:40px">共有数据：{{ count }} 条</span>
-      </xblock>
-      <table class="layui-table">
-        <thead>
-          <tr>
-            <!-- <th>
-              <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
-            </th> -->
-            {% for field_name in field_names %}
-              <th>{{ field_name }}</th>
-            {% endfor %}
-              <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-          
-          {% for data_tuple in data_tuples %}
-          <tr>
-            {% for data in data_tuple %}
-            <td>{{ data }}</td>
-            {% endfor %}
-            <td class="td-manage">
-              <a title="查看"  onclick="x_admin_show('编辑','order-view.html')" href="javascript:;">
-                <i class="layui-icon">&#xe63c;</i>
-              </a>
-              <a title="删除" onclick="member_del(this,'要删除的id')" href="javascript:;">
-                <i class="layui-icon">&#xe640;</i>
-              </a>
-            </td> 
-          {% endfor %}
-            <!-- <td>
-              <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='2'><i class="layui-icon">&#xe605;</i></div>
-            </td>
-            <td>2017009171822298053</td>
-            <td>老王:18925139194</td>
-            <td>7829.10</td>
-            <td>7854.10</td>
-            <td>待确认</td>
-            <td>未支付</td>
-            <td>未发货</td>
-            <td>其他方式</td>
-            <td>申通物流</td>
-            <td>2017-08-17 18:22</td> -->
-            <!-- <td class="td-manage">
-              <a title="查看"  onclick="x_admin_show('编辑','order-view.html')" href="javascript:;">
-                <i class="layui-icon">&#xe63c;</i>
-              </a>
-              <a title="删除" onclick="member_del(this,'要删除的id')" href="javascript:;">
-                <i class="layui-icon">&#xe640;</i>
-              </a>
-            </td>  -->
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="page">
-        <div>
-          {% if data_tuples.has_previous %}
-            <a class="prev" href="">&lt;&lt;</a>
-          {% endif %}
-          {% for page_num in data_tuples.paginator.page_range %}
-            {% if page_num == data_tuples.number %}
-            <span class="current">{{ page_num }}</span>
-            {% else %}
-            <a class="num" href="?page={{ page_num }}">{{ page_num }}</a>
-            {% endif %}
-          {% endfor %}
-          {% if data_tuples.has_next%}
-            <a class="next" href="">&gt;&gt;</a>
-          {% endif %}
-  
-        </div>
+      <div class="about_data_list">
       </div>
-
     </div>
   </body>
   {% endblock %}
@@ -142,17 +61,22 @@
           elem: '#end' //指定元素
         });
       });
-
+      //  加载学生列表
+      $(document).ready(function(){
+        $('.about_data_list').load("{% url 'stu_table:stu_data_list' %}");
+      });
+      // 点击分页 局部刷新
+      function show_list(argument){
+        $('.about_data_list').load("{% url 'stu_table:stu_data_list' %}?page="+argument);
+      }
        /*用户-停用*/
       function member_stop(obj,id){
           layer.confirm('确认要停用吗？',function(index){
 
               if($(obj).attr('title')=='启用'){
-
                 //发异步把用户状态进行更改
                 $(obj).attr('title','停用')
                 $(obj).find('i').html('&#xe62f;');
-
                 $(obj).parents("tr").find(".td-status").find('span').addClass('layui-btn-disabled').html('已停用');
                 layer.msg('已停用!',{icon: 5,time:1000});
 
@@ -170,23 +94,101 @@
       /*用户-删除*/
       function member_del(obj,id){
           layer.confirm('确认要删除吗？',function(index){
-              //发异步删除数据
-              $(obj).parents("tr").remove();
-              layer.msg('已删除!',{icon:1,time:1000});
+              $.ajax({
+                 url:  "{% url 'myUtils:delete_stu_data' %}",
+                 type: 'POST',
+                 data: {'data': id},
+                 cache: false,
+                 success: function(data){
+                  layer.msg('删除成功', {icon: 1});
+                   //发异步删除数据
+                  var count =  $('.count').text()
+                  $('.count').text(count-1)
+                  $(obj).parents("tr").remove();
+                  layer.msg('已删除!',{icon:1,time:1000});
+                 },
+                 error: function(xhr){
+                  layer.msg('删除失败', {icon: 5});
+                 },
+
+              });
+             
           });
       }
-
-
-
+      // function x_admin_show(argument){
+      //   alert('hello');
+      // }
+      // 删除
       function delAll (argument) {
 
         var data = tableCheck.getData();
-  
         layer.confirm('确认要删除吗？'+data,function(index){
-            //捉到所有被选中的，发异步进行删除
+          $.ajax({
+          url: "{% url 'myUtils:delete_stu_data' %}",
+          type: "POST",
+          data: {"data": JSON.stringify(data)},
+          cache: false,
+          success: function(data){
+            // var a = $('.num').text();
+            // $('.num').text(a - data['count']);
             layer.msg('删除成功', {icon: 1});
+            var count =  $('.count').text()
+            $('.count').text(count-data['count'])
             $(".layui-form-checked").not('.header').parents('tr').remove();
+          },
+          error: function(xhr){
+            layer.msg('删除失败', {icon: 5});
+          }
+        });
         });
       }
+      // 查询
+      $('.search').click(function(){
+        //  ajax 提交数据
+                var value = $('.search_input').val()
+                $('.about_data_list').load("{% url 'stu_table:stu_data_list' %}?stu="+value);
+        return false;
+      })
+      // 二级联动选择\学院 刷新班级
+      layui.use('form', function(){
+        var form = layui.form; 
+        form.render('select');
+        form.on('select(choice-college)', function(data){
+            var new_value = data.value;
+            if (new_value != ""){
+                // ajax提交请求
+                $.ajax({
+                    url: "{% url 'myUtils:getClass' %}",
+                    type: "POST",
+                    cache: false,
+                    data: {'pk': new_value},
+                    success: function(data){
+                        var optionstring = "";
+                        var meta = JSON.parse(data);
+                        $.each(meta, function(i, item){
+                            optionstring += '<option value="'+item.pk+'">'+item.fields.class_name+'</option>';
+                        });
+                        $(".choice-class").html('<option value="" selected></option>' + optionstring);
+                        form.render('select');
+                        var value = $('.search-form').serialize()
+                        $('.about_data_list').load("{% url 'stu_table:stu_data_list' %}", value);
+                    },
+                });   
+            }
+        });
+      });
+    // 选择班级刷新页面
+    layui.use('form', function(){
+        var form = layui.form; 
+        form.on('select(choice-class)', function(data){
+              var value = $('.search-form').serialize()
+              $('.about_data_list').load("{% url 'stu_table:stu_data_list' %}", value);
+            });
+    });
+    // 返回列表首页
+    $('.first_page').click(function(){
+      $('.about_data_list').load("{% url 'stu_table:stu_data_list' %}");
+    });
+      
     </script>
  {% endblock %}

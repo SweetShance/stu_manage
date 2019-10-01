@@ -1,6 +1,20 @@
 .layui-elem-field legend{
     margin-left: 42%;
 }
+
 .layui-btn-normal{
     margin-left: 43%;
+}
+/* table{border-width:1px 0px 0px 1px;width:100%;table-layout:fixed;border-collapse:collapse;} */
+
+.form-content{
+    width: 50%;
+    margin: auto auto;
+}
+.form-content .bottom{
+    margin-top: 10px;
+}
+
+.search-div {
+    float: right;
 }
