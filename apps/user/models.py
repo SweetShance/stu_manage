@@ -37,7 +37,7 @@ class Teacher(Profile):
 
 #  角色表
 class User_role(models.Model):
-    role_code = models.IntegerField(verbose_name="用户码", help_text="用于表示用户权限, 1 代表管理员,2 代表辅导员, 3代表班长")
+    role_code = models.IntegerField(verbose_name="用户码", help_text="用于表示用户权限, 1 代表管理员,2 代表辅导员, 3代表班长", )
     role_name = models.CharField(verbose_name="角色名称", max_length=20)
     permission = models.ManyToManyField(to='Permission', verbose_name="权限")
     role_description = models.TextField(verbose_name="角色描述", max_length=200, blank=True)

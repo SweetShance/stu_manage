@@ -1,10 +1,14 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.generic import View
+from django.contrib.auth import login
+from myUtils.utils import session_add_permission, aboout_sno_message
 import xlrd
 from user.models import Monitor, Profile, Teacher
 from .models import File, mymodel_delete, Coolege, Stu_class
 from .utils import ExcelOperate, search_fields_list, search_zh_fields_list, paginator_utils
+from intelligent_form.forms import LoginForm
+from stu_table.utils import search_fields_list
 
 
 # Create your views here.
@@ -23,11 +27,9 @@ class Merge(View):
             
             ex.file_name = "/home/shance/project/intelligent_form/intelligent_form"+file_path.files.url
             ex.mian()
-            
             instance = file_path
             sender = File
             mymodel_delete(sender,instance)
-            
             if ex.error:
                 data['static'] = ex.error
                 data['data_list'] = ex.query_list 
@@ -70,7 +72,6 @@ class Replenish(View):
         try:
             ex = ExcelOperate()
             ex.eng_name = eval(query_list)[0]
-            
             ex.data_type = eval(query_list)[1]
             for i in data_list:
                 ex.row_data = eval(i)
@@ -90,8 +91,11 @@ class Replenish(View):
 # 信息编辑
 class Message_edit(View):
     def get(self, request):
-        if str(request.user.user_role.role_name) == "老师":
+        if str(request.user.user_role.role_name) == "班长":
             colleges = Coolege.objects.filter(pk=Monitor.objects.get(username=request.user).class_name.coolege_name_id)
+        elif str(request.user.user_role.role_name) == "老师":
+            colleges = Coolege.objects.filter(pk=Teacher.objects.get(username=request.user).coolege_name_id)
+            
         else:
             colleges = Coolege.objects.all()
         context = {
@@ -105,8 +109,6 @@ class Message_edit(View):
 
 class Stu_data_list(View):
     def get(self, request):
-        print('hello')
-        print(request.GET)
         data_tuple = ""
         fields_list, cur, conn = search_fields_list()
         field_list_str = str(fields_list).replace('[', "").replace("]", "").replace("'","")
@@ -141,13 +143,15 @@ class Stu_data_list(View):
         # 如果身份是辅导员
         if str(request.user.user_role) == '老师':
             objs = Teacher.objects.filter(username=request.user)
-            if stu:
-                search_sentence = "select %s from stu_table_stu_base_message A inner join stu_table_stu_class B on A.stu_class_id = B.id inner join stu_table_coolege C on B.coolege_name_id = C.id where A.sno = '%s' or A.sname='%s'"%(field_list_str, stu, stu)
-            else:
-                if give_class:
-                    search_sentence = "select %s from stu_table_stu_base_message A inner join stu_table_stu_class B on A.stu_class_id = B.id inner join stu_table_coolege C on B.coolege_name_id = C.id where B.id = '%s'"%(field_list_str, give_class)
+            if objs:
+                obj = objs[0]
+                if stu:
+                    search_sentence = "select %s from stu_table_stu_base_message A inner join stu_table_stu_class B on A.stu_class_id = B.id inner join stu_table_coolege C on B.coolege_name_id = C.id where A.sno = '%s' or A.sname='%s'"%(field_list_str, stu, stu)
                 else:
-                    search_sentence = "select %s from stu_table_stu_base_message A inner join stu_table_stu_class B on A.stu_class_id = B.id inner join stu_table_coolege C on B.coolege_name_id = C.id where C.id = '%s'"%(field_list_str, obj[0].coolege_name_id)                
+                    if give_class:
+                        search_sentence = "select %s from stu_table_stu_base_message A inner join stu_table_stu_class B on A.stu_class_id = B.id inner join stu_table_coolege C on B.coolege_name_id = C.id where B.id = '%s'"%(field_list_str, give_class)
+                    else:
+                        search_sentence = "select %s from stu_table_stu_base_message A inner join stu_table_stu_class B on A.stu_class_id = B.id inner join stu_table_coolege C on B.coolege_name_id = C.id where C.id = '%s'"%(field_list_str, obj.coolege_name_id)                
             cur.execute(search_sentence)
             data_tuple = cur.fetchall()
         # 如果身份是班长
@@ -171,17 +175,22 @@ class Stu_data_list(View):
                 # 获取学生信息表的字段名:
                 # cur.excute("select column_name from information_schema.columns where table_name='stu_table_stu_base_message' and table_schema='manage'")
                 # search_fields_list()
+        
         cur.close()
         conn.close()
         count = len(data_tuple)
         field_names = search_zh_fields_list(fields_list)
         page = request.GET.get('page')
-        data_tuple = paginator_utils(data_tuple, page)
+        data_tuple = paginator_utils(data_tuple, page, 50)
         # 获取所有学院
-        if request.user.user_role.role_name == "班长" or request.user.user_role.role_name == "老师":
+        if str(request.user.user_role.role_name) == "班长":
             colleges = Coolege.objects.filter(pk=Monitor.objects.get(username=request.user).class_name.coolege_name_id)
+        elif str(request.user.user_role.role_name) == "老师":
+            colleges = Coolege.objects.filter(pk=Teacher.objects.get(username=request.user).coolege_name_id)
+            
         else:
             colleges = Coolege.objects.all()
+        
         context = {
             'field_names': field_names,
             'data_tuples': data_tuple,
@@ -193,3 +202,83 @@ class Stu_data_list(View):
     def post(self, request):
         print(request.POST)
         return render(request, template_name="stu_table/stu_data_list.html", context={})
+
+
+class ShareLogin(View):
+    def get(self, request):
+        loginForm = LoginForm()
+        context = {
+            'loginForm': loginForm,
+        }
+        return render(request, template_name="share_login.html", context=context)
+    
+    def post(self, request):
+        data = {'status': ''}
+        loginForm = LoginForm(request.POST)
+        if loginForm.is_valid():
+            error = loginForm.cleaned_data.get('error')
+            # 提交成功
+            data['status'] = "提交成功"
+            if error:
+                data['errormessage'] = error
+                print(data)
+                return JsonResponse(data)
+            else:
+                user = loginForm.cleaned_data.get('user')
+                login(request, user)
+                request.session['user'] = user.username
+                request.session.set_expiry(0)
+                data["status"] = "登录成功"
+                # 将权限列表加入服务器
+                session_add_permission(request, user.username)
+                data['username'] = str(request.user.username)
+                return JsonResponse(data)
+        else:
+            data['status'] = "提交失败"
+            
+            return JsonResponse(data)
+
+
+class ShareForm(View):
+    def get(self, request):
+        sno = request.GET.get('sno')
+        zh_fields_list, data_tuple = aboout_sno_message(sno)
+
+        
+        # 所在学院的所有班级
+        index = zh_fields_list.index("学院")
+        class_index = zh_fields_list.index("班级")
+        if len(data_tuple) > 0:
+            field_data = zip(zh_fields_list, data_tuple)
+            this_coolege = Coolege.objects.filter(coolege_name=data_tuple[index])
+
+            if this_coolege:
+                this_coolege = this_coolege[0]
+        else:
+            field_data =zip(zh_fields_list, [ '' for i in zh_fields_list ])
+            this_coolege = ""
+    
+        cooleges = Coolege.objects.all()
+        if this_coolege:
+            class_names = this_coolege.class_name.all()
+        else:
+            class_names = ""
+        if len(data_tuple) > 0:
+            this_class = Stu_class.objects.filter(class_name=data_tuple[class_index])
+        else:
+            this_class=""
+        if this_class:
+            this_class = this_class[0]
+        else:
+            this_class = ""
+        context = {
+            "field_datas": field_data,
+            "class_names": class_names,
+            "this_class": this_class,
+            "this_coolege": this_coolege,
+            "cooleges": cooleges
+        }
+        return render(request, template_name="shareform.html", context=context)
+
+    def post(self, request):
+        pass

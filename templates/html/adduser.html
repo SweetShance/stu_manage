@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<body>
+<div class="content" style="width: 85%; margin-top:10px;">
+
+<form class="layui-form" action="">
+        <div class="layui-form-item">
+          <label class="layui-form-label">用户名</label>
+          <div class="layui-input-block">
+            <input type="text" name="username" required  lay-verify="required" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">姓名</label>
+            <div class="layui-input-block">
+              <input type="text" name="name" required  lay-verify="required" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+            </div>
+          </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">密码</label>
+          <div class="layui-input-inline">
+            <input type="password" name="password" required lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input password">
+          </div>
+          <div class="layui-form-mid layui-word-aux">密码长度6为以上</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">确认密码</label>
+            <div class="layui-input-inline">
+              <input type="password" name="password" required lay-verify="required" placeholder="请确认密码" autocomplete="off" class="layui-input passwordAgain">
+            </div>
+            <div class="layui-form-mid layui-word-aux">密码长度6为以上</div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">身份</label>
+          <div class="layui-input-block">
+            <select name="user_role" lay-verify="required" lay-filter="user-role">
+              <option value="" >请选择身份</option>
+              {% for user_role in user_roles %}
+                <option value="{{ user_role.role_name }}">{{ user_role.role_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="layui-form-item college-select" style="display: none">
+          <label class="layui-form-label">学院</label>
+          <div class="layui-input-block">
+            <select name="college" lay-verify="user-role" lay-filter="college">
+              <option value="">请选择学院</option>
+              {% for college in colleges %}
+                <option value="{{ college.pk }}">{{ college.coolege_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="layui-form-item class-select" style="display: none">
+            <label class="layui-form-label">班级</label>
+            <div class="layui-input-block">
+              <select name="class" id="class_names" lay-verify="user-role" lay-filter="class">
+                <option value="">请选择班级</option>
+              </select>
+            </div>
+          </div>
+        <div class="layui-form-item">
+          <div class="layui-input-block">
+            <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+          </div>
+        </div>
+      </form>
+</div>
+    </body>
+{% endblock %}
+{% block script %}
+    <script>
+        //Demo
+        layui.use('form', function(){
+          var form = layui.form;
+          form.on('select(user-role)', function(data){
+            var dataValue = data.value;
+            if(dataValue == "老师"){
+              $('.college-select').show();
+              $('.class-select').hide()
+            }else if(dataValue == "班长"){
+              $('.college-select').show();
+              $('.class-select').show();
+            }else if(dataValue == "管理员"){
+              $('.college-select').hide();
+              $('.class-select').hide();
+            }
+          });
+          // 获取班级
+          form.on('select(college)', function(data){
+            var new_value = data.value;
+            if (new_value != ""){
+              $.ajax({
+                    url: "{% url 'myUtils:getClass' %}",
+                    type: "POST",
+                    cache: false,
+                    data: {'pk': new_value},
+                    success: function(data){
+                        var optionstring = "";
+                        var meta = JSON.parse(data);
+                        $.each(meta, function(i, item){
+                            optionstring += '<option value="'+item.pk+'">'+item.fields.class_name+'</option>';
+                        });
+                        $("#class_names").html('<option value="">请选择班级</option>' + optionstring);
+                        form.render('select');
+                    },
+                });   
+            }
+          })
+          //监听提交
+          form.on('submit(formDemo)', function(data){
+            //  密码验证
+            var password = $('.password').val();
+            var passwordAgain = $('.passwordAgain').val();
+            if (password.length >= 6 && passwordAgain.length >= 6){
+              if (passwordAgain == password){
+                $.post("{% url 'user:adduser' %}", data.field, function(data){
+                  if(data.status == "success"){
+                    var index = parent.layer.getFrameIndex(window.name);
+                    //关闭当前frame
+                    parent.layer.close(index);
+                    parent.location.reload()
+                  }else{
+                    layer.msg(data.status,{icon: 5,time:1000, shift: 6},);
+                  }
+
+            }, 'json' );
+              }else{
+                layer.msg("两次密码不一致",{icon: 5,time:1000, shift: 6},);
+              }
+            }else{
+              layer.msg("密码太短",{icon: 5,time:1000, shift: 6},);
+            }
+            // layer.msg(JSON.stringify(data.field));
+            return false;
+          });
+        });
+    </script>
+{% endblock %}

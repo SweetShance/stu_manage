@@ -9,16 +9,20 @@
         <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除数据</button>
         <button class="layui-btn" onclick="openModak()"><i class="layui-icon"></i>添加学生</button>
         <button class="layui-btn add-field" onclick="addField()"><i class="layui-icon"></i>添加字段</button>
+        <button class="layui-btn selectField"><i class="layui-icon">&#xe641;</i>选择字段导出excel</button>
+        <button class="layui-btn share"><i class="layui-icon">&#xe641;</i>分享</button>
         <span class="x-right" style="line-height:40px">共有数据：<span class="count">{{ count }}</span> 条</span>
       </xblock>
     <table class="layui-table">
         <thead>
           <tr>
             <th min-width="100px;">
-              <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+              <div class="layui-unselect header layui-form-checkbox row" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+              <button class="layui-btn import col" style="display: none"><i class="layui-icon">&#xe641;</i>导出</button>
             </th>
             {% for field_name in field_names %}
-              <th>{{ field_name }}</th>
+              
+              <th>{{ field_name }}<input name="field" type="checkbox" style="display: none" value="{{ field_name }}" class="col col_checkbox"> </th>
             {% endfor %}
               <th>操作</th>
             </tr>
@@ -27,7 +31,7 @@
           {% for data_tuple in data_tuples %}
           <tr>
             <td>
-                <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id={{data_tuple.0}}><i class="layui-icon">&#xe605;</i></div>
+                <div class="layui-unselect layui-form-checkbox row" lay-skin="primary" data-id={{data_tuple.0}}><i class="layui-icon">&#xe605;</i></div>
             </td>
             {% for data in data_tuple %}
             <td>{{ data }}</td>
@@ -47,7 +51,7 @@
       <div class="page">
         <div>
           {% if data_tuples.has_previous %}
-            <a class="prev" href="">&lt;&lt;</a>
+            <a class="prev" href="?page={{ data_tuples.prevoius_page_number }}">&lt;&lt;</a>
           {% endif %}
           {% for page_num in data_tuples.paginator.page_range %}
             {% if page_num == data_tuples.number %}
@@ -58,54 +62,54 @@
             {% endif %}
           {% endfor %}
           {% if data_tuples.has_next%}
-            <a class="next" href="">&gt;&gt;</a>
+            <a class="next" href="?page={{ data_tuples.next_page_number }}">&gt;&gt;</a>
           {% endif %}
         </div>
       </div>
     <!-- 弹出层增加 -->
-    <div class="add motaikuang" style="display: none;">
-      <div class="form-add" style="width: 350px;">
-        <form class="layui-form add-stu-form" >
-          {% for field_name in field_names %}
-            {% if field_name == "学院" %}
-              <div class="layui-form-item">
-                      <label class="layui-form-label college">{{ field_name }}</label>
-                  <div class="layui-input-block">
-                      <select class="cooleges" id = "colleges" name="{{ field_name }}" lay-filter="college">
-                        <option value="">请选择学院</option>
-                        {% for college in  colleges %}
-                          <option value="{{ college.pk }}">{{ college }}</option>
-                        {% endfor %}
-                      </select>
-                  </div>
-              </div>
-            {% else %}
-                {% if field_name == "班级" %}
-                  <div class="layui-form-item">
-                      <label class="layui-form-label coolege">{{ field_name }}</label>
+      <div class="add motaikuang" style="display: none;">
+        <div class="form-add" style="width: 350px;">
+          <form class="layui-form add-stu-form" >
+            {% for field_name in field_names %}
+              {% if field_name == "学院" %}
+                <div class="layui-form-item">
+                        <label class="layui-form-label college">{{ field_name }}</label>
                     <div class="layui-input-block">
-                      <select class="cooleges"id = "class" name="{{ field_name }}" lay-filter="class">
-                          <option value="">请选择班级</option>
-                      </select>
+                        <select class="cooleges" id = "colleges" name="{{ field_name }}" lay-filter="college">
+                          <option value="">请选择学院</option>
+                          {% for college in  colleges %}
+                            <option value="{{ college.pk }}">{{ college }}</option>
+                          {% endfor %}
+                        </select>
                     </div>
-                  </div>
-
-                {% else %}
-                  <div class="layui-form-item">
-                        <label class="layui-form-label">{{ field_name }}</label>
+                </div>
+              {% else %}
+                  {% if field_name == "班级" %}
+                    <div class="layui-form-item">
+                        <label class="layui-form-label coolege">{{ field_name }}</label>
                       <div class="layui-input-block">
-                        <input type="text" name="{{ field_name }}" required  lay-verify="required" placeholder="请输入{{ field_name }}" autocomplete="off" class="layui-input">
-                       </div>
-                  </div>
-                {% endif %}
-            {% endif %}
-          {% endfor %}
-          <div class="bottom" >
-              <button type="button"  class="layui-btn layui-btn-sm layui-btn-normal quit">取消</button><button type="button" class="layui-btn layui-btn-sm layui-btn-normal add-save">保存</button>
-          </div>
-        </form>
+                        <select class="cooleges"id = "class" name="{{ field_name }}" lay-filter="class">
+                            <option value="">请选择班级</option>
+                        </select>
+                      </div>
+                    </div>
+
+                  {% else %}
+                    <div class="layui-form-item">
+                          <label class="layui-form-label">{{ field_name }}</label>
+                        <div class="layui-input-block">
+                          <input type="text" name="{{ field_name }}" required  lay-verify="required" placeholder="请输入{{ field_name }}" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                  {% endif %}
+              {% endif %}
+            {% endfor %}
+            <div class="bottom" >
+                <button type="button"  class="layui-btn layui-btn-sm layui-btn-normal quit">取消</button><button type="button" class="layui-btn layui-btn-sm layui-btn-normal add-save">保存</button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
     </body>
 {% endblock %}
 {% block script %}
@@ -164,7 +168,7 @@
                             }else if(obj.status=='sno'){
                                 layer.msg('添加失败, 学号是必填项', {icon: 5});
                             }else if(obj.status=='sname'){
-                                layer.msg('添加失败, 学号是必填项', {icon: 5});
+                                layer.msg('添加失败, 姓名是必填项', {icon: 5});
                             }else if(obj.status=='sex'){
                                 layer.msg('添加失败, 性别是必填的', {icon: 5});
                             }else if(obj.status=='该学生已存在'){
@@ -214,6 +218,58 @@
                             layer.closeAll(); 
             })
         });
-        
+        $('.share').click(function(){
+          layer.prompt({
+                title: '填写您字段的类型(填数字)，并确认',
+                id:'sharetext',
+                value: 'http://127.0.0.1:8000/manage/shareLogin',
+                success: function(layer0, index){
+                  $('#sharetext input').attr("readOnly", "readOnly");
+                },
+                }, function(type, index){
+                });
+        })
+    $('.selectField').click(function(){
+      var col_checkbox = $('.col')
+      var row_checkbox = $('.row')
+      if(col_checkbox.css('display') == 'none'){
+        col_checkbox.show();
+        row_checkbox.hide();
+        $('.selectField').text('取消')
+      }else{
+        col_checkbox.hide();
+        row_checkbox.show();
+        $('.selectField').text('选择字段导出excel')
+      }
+    });
+    $('.import').click(function(){
+      var arry = []
+      $('input[name="field"]:checked').each(function(index, element) {
+                //追加到数组中
+                arry.push($(this).val());
+            });
+            var csrf=$('input[name="csrfmiddlewaretoken"]').val();
+         const req = new XMLHttpRequest();
+         req.open('POST', "{% url 'myUtils:import' %}", true);
+         req.responseType = 'blob';
+         req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); //设置请求头
+         req.send('field='+JSON.stringify(arry)+"&&csrfmiddlewaretoken="+csrf); //输入参数
+         req.onload = function() {
+             const data = req.response;
+             const a = document.createElement('a');
+             const blob = new Blob([data]);
+             const blobUrl = window.URL.createObjectURL(blob);
+             download(blobUrl) ;
+         };
+    });
+    function download(blobUrl) {
+    var city = $("input[name='city']").val();
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.download = '学生表.xls';
+    a.href = blobUrl;
+    a.click();
+    
+  }
     </script>
 {% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block content %}
+
+  <body>
+    <div class="x-body">
+
+        <form class="layui-form layui-form-pane add-role-form">
+                <div class="layui-form-item">
+                    <input type="hidden" class="pk" name="pk" value="{{ obj.pk }}">
+                    <label for="name" class="layui-form-label">
+                        <span class="x-red">*</span>角色名
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="name" name="name" required lay-verify="required"
+                        autocomplete="off" value="{{ obj.role_name }}" class="layui-input role-name">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">
+                        拥有权限
+                    </label>
+                    <table  class="layui-table layui-input-block">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="layui-input-block">
+                                        {% for permission in permissions %}
+                                        <input {% if permission in obj_permissions %} checked="true" {% endif %}  name="permission_list" lay-skin="primary"  type="checkbox" value="{{ permission.pk }}" title="{{ permission.permission_name }}">
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="layui-form-item layui-form-text">
+                    <label for="desc" class="layui-form-label">
+                        描述
+                    </label>
+                    <div class="layui-input-block">
+                        <textarea placeholder="请输入内容" id="desc" name="desc" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                <button class="layui-btn edit-role" type="button">增加</button>
+              </div>
+            </form>
+    </div>
+  </body>
+{% endblock %}
+{% block script %}
+    <script>
+        $('.edit-role').click(function(){
+            var role_name = $('.role-name').val();
+            if (role_name == ""){
+                layer.msg('角色名不能为空', {icon: 5});
+            }else{
+                var pk = $('.pk').val()
+                var values = $('input:checkbox:checked');
+                var value_arr = [];
+                var desc = $("#desc").val()
+                $.each(values, function(i, n){
+                    value_arr[i] = $(this).val();
+                })
+                $.post("{% url 'roleedit' %}", {'pk':pk,'role_name': role_name, "value": JSON.stringify(value_arr), 'desc': desc}, function(){
+                    // 关闭当前窗口
+                var index=parent.layer.getFrameIndex(window.name); //获取当前窗口的name
+                parent.layer.close(index);
+                // 刷新父窗口
+                parent.location.reload();
+                });                 
+            }
+        });
+    </script>
+{% endblock %}

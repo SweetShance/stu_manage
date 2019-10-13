@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<form class="layui-form"  novalidate>
+    {% for field in personalForm %}
+    <div class="layui-form-item">
+        <label class="layui-form-label">用户名</label>
+        <div class="layui-input-block">
+            <input type="text" name="username" required  lay-verify="required" readonly="true" placeholder="" value="{{ field.username }}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">姓名</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" required  value="{{ field.name }}" lay-verify="required" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">电话</label>
+        <div class="layui-input-block">
+            <input type="text" name="phone" required  value="{{ field.phone }}" lay-verify="required" placeholder="请输入电话" autocomplete="off" class="layui-input phone">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮箱</label>
+        <div class="layui-input-block">
+            <input type="text" name="email" required  value="{{ field.email }}" lay-verify="required" placeholder="请输入邮箱" autocomplete="off" class="layui-input email">
+        </div>
+    </div>
+    {% endfor %}
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+{% block script %}
+<script>
+    //Demo
+    layui.use('form', function(){
+        var form = layui.form;
+        //监听提交
+        form.on('submit(formDemo)', function(data){
+            var myreg=/^[1][3,4,5,7,8][0-9]{9}$/;
+            var myreg2 = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
+            var phone = $('.phone').val();
+            // 验证邮箱和电话
+            var email = $('.email').val();
+            if(myreg.test(phone)){
+                if(myreg2.test(email)){
+                    save(data)
+                }else{
+                    layer.msg("请填写正确邮箱",{icon: 5,time:1000, shift: 6},);
+                }
+            }else{
+                layer.msg("请填写正确电话",{icon: 5,time:1000, shift: 6},);
+            }
+        return false;
+        });
+    });
+
+    function save(data){
+        $.ajax({
+                url: "/user/personaldetails",
+                type: 'post',
+                data: data.field,
+                cache: false,
+                success: function(data){
+                    if(data.status == "yes"){
+                        layer.msg("保存成功",{icon: 1,time:1000, shift: 6},);
+                    }
+                },
+                error: function(xhr){
+                    console.log(xhr);
+                }
+            })
+    }
+</script>
+{% endblock %}

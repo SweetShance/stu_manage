@@ -105,7 +105,7 @@ class ExcelOperate():
         conn.close()
     
     # 更新数据
-    def update_data(self):
+    def update_data(self, default=None):
         # 根据学号筛选
         
         # 获取该模型的所有字段名
@@ -117,8 +117,11 @@ class ExcelOperate():
         cur = conn.cursor()
         # 信息异常修改处理
         objects= Stu_base_message.objects.filter(sno=self.name_data['sno'])
-        if objects:
+        if objects and not default:
             obj =  objects.first()
+            # print(self.name_data )
+            # print(obj.stu_class != self.name_data['stu_class'] and obj.stu_class != None)
+            # print(obj.sname != None and obj.sname !=self.name_data['sname'], obj.sex != None and obj.sex != self.name_data['sex'],str(obj.stu_class) != self.name_data['stu_class'] and obj.stu_class != None)
             if obj.sname != None and obj.sname !=self.name_data['sname']:
                 self.query_list.append(self.row_data)
                 self.query_data.append(self.eng_name)
@@ -129,18 +132,18 @@ class ExcelOperate():
                 self.query_list.append(self.row_data)
                 self.query_data.append(self.eng_name)
                 self.query_data.append(self.data_type)
+                
                 self.error = "性别"
                 # print(self.row_data)
                 return '性别'
 
-            if str(obj.stu_class) != self.name_data['stu_class'] and obj.stu_class != None:
+            if str(obj.stu_class) != self.name_data['class_name'] and obj.stu_class != None:
                 self.query_list.append(self.row_data)
                 self.query_data.append(self.eng_name)
                 self.query_data.append(self.data_type)
                 self.error = "班级"
                 return '班级'
         # obj = Stu_base_message.objects.filter(sno=self.name_data['sno']).first()
-        
         if not objects:
             # 如果没有就创建
             obj = Stu_base_message.objects.create(sno=self.name_data['sno'])
@@ -150,8 +153,9 @@ class ExcelOperate():
              # 判断 字段的位置
             index = self.eng_name.index(field)
             
-            if field == "stu_class":
-                print(field)
+            
+            if field == "class_name":
+                
                 stu_id = Stu_class.objects.get(class_name__contains=self.name_data[field]).id
                 cur.execute("update stu_table_stu_base_message set stu_class_id = %s where sno=%s"%(stu_id, self.name_data['sno']))
 
@@ -205,11 +209,13 @@ class ExcelOperate():
         a = 1
         Tag = True
         while Tag:
+            
             Tag = self.read_excel_row(a)
             if Tag == False:
                 break
             # 实现字典
             self.binding_name_data()
+            
             self.update_data()
             a += 1
             
@@ -252,9 +258,9 @@ def search_zh_fields_list(fields_list):
     return zh_list
 
 
-def paginator_utils(data_list, page):
+def paginator_utils(data_list, page, number):
     # 设置一页内容显示多少, 一页显示50条数据
-    paginator = Paginator(data_list, 50)
+    paginator = Paginator(data_list, number)
     # 获取页码
     page_of_data = paginator.get_page(page)
 

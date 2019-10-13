@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block link %}
+    <link rel="stylesheet" href="{% static 'stu_table/css/admin-rule.css' %}">
+{% endblock %}
+{% block content %}
+<body>
+    <div class="permission">
+        <form class="edit-permission">
+            <input type="hidden" name="pk" value="{{ obj.pk }}">
+            <div class="layui-form-item">
+                <label class="layui-form-label">权限名称</label>
+                <div class="layui-input-block">
+                  <input type="text" name="rule_name" required  value="{{ obj.permission_name }}" lay-verify="required" placeholder="请输入权限名称" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">权限路由</label>
+                <div class="layui-input-block">
+                  <input type="text" name="rule_url" required  value="{{ obj.url }}" lay-verify="required" placeholder="请输入权限名称" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+              <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">权限描述</label>
+                <div class="layui-input-block">
+                  <textarea name="desc" placeholder="请写权限描述""  class="layui-textarea">{{ obj.permission_description }}</textarea>
+                </div>
+              </div>
+              <div class="bottom" >
+                <button type="button"  class="layui-btn layui-btn-sm layui-btn-normal quit">取消</button><button type="button" class="layui-btn layui-btn-sm layui-btn-normal edit-rule-save">保存</button>
+              </div>
+        </form>
+    </div>
+</body>
+{% endblock %}
+{% block script %}
+    <script>
+        $('.edit-rule-save').click(function(){
+            var data = $('.edit-permission').serialize()
+            $.post('{% url "permissionedit" %}', data, function(){
+                var index=parent.layer.getFrameIndex(window.name); //获取当前窗口的name
+                parent.layer.close(index);
+                parent.location.reload();
+            })
+        });
+        $('.quit').click(function(){
+            var index=parent.layer.getFrameIndex(window.name); //获取当前窗口的name
+            parent.layer.close(index);
+      });
+    </script>
+{% endblock %}

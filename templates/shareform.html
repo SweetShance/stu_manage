@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} 修改学生信息 {% endblock %}
+{% block link %}
+<link rel="stylesheet" href="{% static 'stu_table/css/style.css' %}"> 
+{% endblock %}
+{% block content %}
+<body>
+    <div class="form-content">
+        <form class="layui-form stu_message">
+                <div class="layui-form-item">
+                    {% for field_data in field_datas %}
+                        {% if field_data.0 == "学院" %}
+                            <div class="layui-form-item">
+                                    <label class="layui-form-label coolege">{{ field_data.0 }}</label>
+                                    <div class="layui-input-block">
+                                        <select class="cooleges"id = "cooleges" name="{{ field_data.0 }}" lay-filter="coolege">
+                                                <option value="">请选择</option>
+                                                
+                                            {% for coolege in cooleges %}
+                                                <option value="{{ coolege.id }}"  {% if coolege == this_coolege %} selected {% endif %}>{{ coolege }}</option>
+                                            {% endfor %}
+                                            
+                                        </select>
+                                    </div>
+                                </div>
+                            {% else %}
+                                {% if field_data.0 == "班级" %}
+                                    <div class="layui-form-item">
+                                            <label class="layui-form-label class_name">{{ field_data.0 }}</label>
+                                            <div class="layui-input-block">
+                                                <select name="{{ field_data.0 }}" id = "class_names" lay-verify="required">
+                                                    {% for class_name in class_names %} 
+                                                        <option value="{{ class_name.id }}" {% if class_name == this_class %} selected {% endif %}>{{ class_name }}</option>  
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        {% if field_data.0 == "学号" %}
+                                        <label class="layui-form-label">{{ field_data.0 }}</label>
+                                        <div class="layui-input-block">
+                                            <input type="text" name="{{ field_data.0 }}" required  lay-verify="required" placeholder="请输入{{ field_data.0 }}" autocomplete="off" class="layui-input" value="{{ request.user.username}}" readonly="readonly">
+                                        </div>
+                                        {% else %}
+                                        <label class="layui-form-label">{{ field_data.0 }}</label>
+                                        <div class="layui-input-block">
+                                            <input type="text" name="{{ field_data.0 }}" required  lay-verify="required" placeholder="请输入{{ field_data.0 }}" autocomplete="off" class="layui-input" value="{{ field_data.1 }}">
+                                        </div>
+                                        {% endif %}
+                                {% endif %}
+                        {% endif %}  
+                    {% endfor %}
+                    <div class="bottom" >
+                        <button type="button"  class="layui-btn layui-btn-sm layui-btn-normal quit">取消</button><button onclick="save()" type="button" class="layui-btn layui-btn-sm layui-btn-normal save">保存</button>
+                    </div>
+        </form>
+    </div>
+</bpdy>
+{% endblock %}
+{% block script %}
+<script>
+    layui.use('form', function(){
+        var form = layui.form; 
+        form.render('select');
+        form.on('select(coolege)', function(data){
+            var new_value = data.value;
+            if (new_value != ""){
+                // ajax提交请求
+                $.ajax({
+                    url: "{% url 'myUtils:sharegetclass' %}",
+                    type: "POST",
+                    cache: false,
+                    data: {'pk': new_value},
+                    success: function(data){
+                        var optionstring = "";
+                        var meta = JSON.parse(data);
+                        $.each(meta, function(i, item){
+                            optionstring += '<option value="'+item.pk+'">'+item.fields.class_name+'</option>';
+                        });
+                        $("#class_names").html('<option value="">请选择班级</option>' + optionstring);
+                        form.render('select');
+                    },
+                });   
+            }
+        });
+    });
+        // 保存数据
+        function save(){
+                var data = $('.stu_message').serialize();
+                // 提交数据
+                $.post("{% url 'myUtils:alter' %}",data,function(obj){
+                        if(obj.status=='成功'){
+                                layer.msg('修改成功', {icon: 1});
+                            }else if(obj.status=='失败'){
+                                layer.msg('修改失败', {icon: 5});
+                            }else if(obj.status=='数据没有改动'){
+                                layer.msg('信息并未改变', {icon: 1});
+                            }
+                },"json");
+            };
+        $('.quit').click(function(){
+            var index=parent.layer.getFrameIndex(window.name); //获取当前窗口的name
+            parent.layer.close(index);	
+        });
+       
+</script>
+{% endblock %}

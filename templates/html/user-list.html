@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title%} 管理员管理 {% endblock %}
+{% block content %}
+  <body>
+    <div class="x-nav">
+      <span class="layui-breadcrumb">
+        <a href="{% url 'user:userlist' %}">首页</a>
+      <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+    </div>
+    <div class="x-body">
+      <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" action="{% url 'user:userlist' %}" method="POST">
+          <input type="text" name="username"  placeholder="请输入用户名" autocomplete="off" class="layui-input">
+          <button class="layui-btn" type="submit"  lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+      </div>
+      <xblock>
+        <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除</button>
+        <button class="layui-btn" onclick="x_admin_show('添加用户','/user/adduser', 600, 400)"><i class="layui-icon"></i>添加</button>
+        <span class="x-right" style="line-height:40px">共有数据：<span>{{ count }}</span>  条</span>
+      </xblock>
+      <table class="layui-table">
+        <thead>
+          <tr>
+            <th>
+              <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>ID</th>
+            <th>登录名</th>
+            <th>姓名</th>
+            <th>手机</th>
+            <th>邮箱</th>
+            <th>角色</th>
+            <th>操作</th>
+        </thead>
+        <tbody>
+          {% for user in user_list %}
+          <tr>
+              <td>
+                <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='{{ user.pk }}'><i class="layui-icon">&#xe605;</i></div>
+              </td>
+              <td>{{ user.pk }}</td>
+              <td>{{ user.username }}</td>
+              <td>{{ user.name }}</td>
+              <td>{{ user.phone }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.user_role.role_name }}</td>
+              <td class="td-manage">
+
+                  <a  class="layui-btn layui-btn-sm layui-btn-warm" onclick="x_admin_show('修改密码','/user/changepassword?pk={{ user.pk }}',600,400)" title="修改密码" href="javascript:;">
+                    修改密码
+                  </a>
+                  <a title="删除" class="layui-btn layui-btn-sm layui-btn-danger" onclick="member_del(this,'{{ user.pk }}')" href="javascript:;">
+                    删除
+                  </a>
+                </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="page">
+          <div>
+              {% if user_list.has_previous %}
+                <a class="prev" href="?page={{user_list.prevoius_page_number }}">&lt;&lt;</a>
+              {% endif %}
+              {% for page_num in user_list.paginator.page_range %}
+                {% if page_num == user_list.number %}
+                <span class="current">{{ page_num }}</span>
+                {% else %}
+                <!-- <a class="num" href="?page={{ page_num }}">{{ page_num }}</a> -->
+                <a class="num" href="?page={{page_num}}">{{ page_num }}</a>
+                {% endif %}
+              {% endfor %}
+              {% if user_list.has_next%}
+                <a class="next" href="?page={{ user_list.next_page_number }}">&gt;&gt;</a>
+              {% endif %}
+            </div>
+      </div>
+
+    </div>
+  </body>
+  {% endblock %}
+  {% block script %}
+    <script>
+      layui.use('laydate', function(){
+        var laydate = layui.laydate;
+        
+        //执行一个laydate实例
+        laydate.render({
+          elem: '#start' //指定元素
+        });
+
+        //执行一个laydate实例
+        laydate.render({
+          elem: '#end' //指定元素
+        });
+      });
+
+       /*用户-停用*/
+      function member_stop(obj,id){
+          layer.confirm('确认要停用吗？',function(index){
+
+              if($(obj).attr('title')=='启用'){
+
+                //发异步把用户状态进行更改
+                $(obj).attr('title','停用')
+                $(obj).find('i').html('&#xe62f;');
+
+                $(obj).parents("tr").find(".td-status").find('span').addClass('layui-btn-disabled').html('已停用');
+                layer.msg('已停用!',{icon: 5,time:1000});
+
+              }else{
+                $(obj).attr('title','启用')
+                $(obj).find('i').html('&#xe601;');
+
+                $(obj).parents("tr").find(".td-status").find('span').removeClass('layui-btn-disabled').html('已启用');
+                layer.msg('已启用!',{icon: 5,time:1000});
+              }
+              
+          });
+      }
+
+      /*用户-删除*/
+      function member_del(obj,id){
+          layer.confirm('确认要删除吗？',function(index){
+            $.post("{% url 'user:deleteuser' %}", {'value': id}, function(data){
+                var count = $('.count').text();
+                  $('.count').text(count-1);
+              })
+              //发异步删除数据
+              $(obj).parents("tr").remove();
+              layer.msg('已删除!',{icon:1,time:1000});
+          });
+      }
+      function delAll (argument) {
+        var data = tableCheck.getData();
+        if(data == ""){
+            layer.msg('没有选中', {icon: 5});
+          }else{
+            layer.confirm('确认要删除吗？'+data,function(index){
+              $.post("{% url 'user:deleteuser' %}", {'values': JSON.stringify(data)}, function(data){
+                var count = $('.count').text();
+                  $('.count').text(count-data['count']);
+              })  
+                //捉到所有被选中的，发异步进行删除
+                layer.msg('删除成功', {icon: 1});
+                $(".layui-form-checked").not('.header').parents('tr').remove();
+            });
+          }
+      }
+    </script>
+  {% endblock %}

@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %} 权限管理 {% endblock %}
-    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+{% block link %} <link rel="stylesheet" href="{% static 'stu_table/css/admin-rule.css' %}"> {% endblock %}
+    <!-- 让IE8/9支 持媒体查询，从而兼容栅格 -->
     <!--[if lt IE 9]>
       <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
       <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
@@ -11,48 +13,15 @@
   <body>
     <div class="x-nav">
       <span class="layui-breadcrumb">
-        <a href="">首页</a>
-        <a href="">演示</a>
-        <a>
-          <cite>导航元素88</cite></a>
+        <a href="{% url 'permiManagement' %}">首页</a>
       </span>
       <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" href="javascript:location.replace(location.href);" title="刷新">
         <i class="layui-icon" style="line-height:38px">ဂ</i></a>
     </div>
-    <div class="x-body">
-      <div class="layui-row">
-        <form class="layui-form layui-col-md12 x-so layui-form-pane">
-          <div class="layui-input-inline">
-            <select name="cateid">
-              <option>规则分类</option>
-              <option>文章</option>
-              <option>会员</option>
-              <option>权限</option>
-            </select>
-          </div>
-          <div class="layui-input-inline">
-            <select name="contrller">
-              <option>请控制器</option>
-              <option>Index</option>
-              <option>Goods</option>
-              <option>Cate</option>
-            </select>
-          </div>
-          <div class="layui-input-inline">
-            <select name="action">
-              <option>请方法</option>
-              <option>add</option>
-              <option>login</option>
-              <option>checklogin</option>
-            </select>
-          </div>
-          <input class="layui-input" placeholder="权限名" name="cate_name" >
-          <button class="layui-btn"  lay-submit="" lay-filter="sreach"><i class="layui-icon"></i>增加</button>
-        </form>
-      </div>
       <xblock>
         <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除</button>
-        <span class="x-right" style="line-height:40px">共有数据：88 条</span>
+        <button class="layui-btn add-rule-btn"  lay-submit="" lay-filter="sreach"><i class="layui-icon"></i>增加</button>
+        <span class="x-right" style="line-height:40px">共有<span class="count">{{ count }}</span>条数据</span>
       </xblock>
       <table class="layui-table">
         <thead>
@@ -63,40 +32,81 @@
             <th>ID</th>
             <th>权限规则</th>
             <th>权限名称</th>
-            <th>所属分类</th>
             <th>操作</th>
         </thead>
         <tbody>
-          <tr>
-            <td>
-              <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='2'><i class="layui-icon">&#xe605;</i></div>
-            </td>
-            <td>1</td>
+          
+           
+            <!-- <td>1</td>
             <td>admin/user/userlist</td>
             <td>会员列表</td>
-            <td>会员相关</td>
-            <td class="td-manage">
-              <a title="编辑"  onclick="x_admin_show('编辑','xxx.html')" href="javascript:;">
-                <i class="layui-icon">&#xe642;</i>
-              </a>
-              <a title="删除" onclick="member_del(this,'要删除的id')" href="javascript:;">
-                <i class="layui-icon">&#xe640;</i>
-              </a>
-            </td>
-          </tr>
+            <td>会员相关</td> -->
+            {% for permission in permission_list %}
+            <tr>
+              <td>
+                <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='{{ permission.pk }}''><i class="layui-icon">&#xe605;</i></div>
+              </td>
+              <td>{{ permission.pk }}</td>
+              <td>{{ permission.url }}</td>
+              <td>{{ permission.permission_name }}</td>
+              <td class="td-manage">
+                <a title="编辑"  onclick="x_admin_show('编辑','/permissionedit?pk={{ permission.pk }}')" href="javascript:;">
+                  <i class="layui-icon">&#xe642;</i>
+                </a>
+                <a title="删除" onclick="member_del(this,'{{ permission.pk }}')" href="javascript:;">
+                  <i class="layui-icon">&#xe640;</i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
         </tbody>
       </table>
       <div class="page">
         <div>
-          <a class="prev" href="">&lt;&lt;</a>
-          <a class="num" href="">1</a>
-          <span class="current">2</span>
-          <a class="num" href="">3</a>
-          <a class="num" href="">489</a>
-          <a class="next" href="">&gt;&gt;</a>
+          {% if permission_list.has_previous %}
+            <a class="prev" href="?page={{ permission_list.prevoius_page_number }}">&lt;&lt;</a>
+          {% endif %}
+          {% for page_num in permission_list.paginator.page_range %}
+            {% if page_num == permission_list.number %}
+            <span class="current">{{ page_num }}</span>
+            {% else %}
+            <!-- <a class="num" href="?page={{ page_num }}">{{ page_num }}</a> -->
+            <a class="num" href="{% url 'permiManagement' %}?page={{page_num}}">{{ page_num }}</a>
+            {% endif %}
+          {% endfor %}
+          {% if permission_list.has_next%}
+            <a class="next" href="?page={{ permission_list.next_page_number }}">&gt;&gt;</a>
+          {% endif %}
         </div>
       </div>
 
+    </div>
+    <div class="add-rule rule-motaikuang" style="display: none;">
+      <div class="form-add" style="width: 350px; margin-top: 10px;">
+        <form class="layui-form add-rule-form" action="{% url 'permissionadd' %}" method="POST" required/>
+          <div class="layui-form-item">
+            <label class="layui-form-label">权限名称</label>
+            <div class="layui-input-block">
+              <input type="text" name="rule_name" required  lay-verify="required" placeholder="请输入权限名称" autocomplete="off" class="layui-input">
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <label class="layui-form-label">权限路由</label>
+            <div class="layui-input-block">
+              <input type="text" name="rule_url" required  lay-verify="required" placeholder="请输入权限路由,例如:/manage/edit " autocomplete="off" class="layui-input">
+            </div>
+          </div>
+          <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">权限描述</label>
+            <div class="layui-input-block">
+              <textarea name="desc" placeholder="请写权限描述"" class="layui-textarea"></textarea>
+            </div>
+          </div>
+          <div class="bottom" >
+            <button type="button"  class="layui-btn layui-btn-sm layui-btn-normal quit">取消</button><button type="submit" class="layui-btn layui-btn-sm layui-btn-normal add-rule-save">保存</button>
+          </div>
+        </form>
+      </div>
     </div>
   </body>
   {% endblock %}
@@ -104,9 +114,6 @@
     <script>
       layui.use('laydate', function(){
         var laydate = layui.laydate;
-
-        
-        
         //执行一个laydate实例
         laydate.render({
           elem: '#start' //指定元素
@@ -146,8 +153,11 @@
       function member_del(obj,id){
           layer.confirm('确认要删除吗？',function(index){
               //发异步删除数据
+              $.post("{% url 'permissiondelete' %}", {'pk': id})
               $(obj).parents("tr").remove();
               layer.msg('已删除!',{icon:1,time:1000});
+              var count = $('.count').text();
+              $('.count').text(count-1);
           });
       }
 
@@ -156,12 +166,41 @@
       function delAll (argument) {
 
         var data = tableCheck.getData();
-  
-        layer.confirm('确认要删除吗？'+data,function(index){
-            //捉到所有被选中的，发异步进行删除
-            layer.msg('删除成功', {icon: 1});
-            $(".layui-form-checked").not('.header').parents('tr').remove();
-        });
+        if(data == ""){
+            layer.msg('没有选中', {icon: 5});
+          }else{
+            layer.confirm('确认要删除吗？'+data,function(index){
+              $.post("{% url 'permissiondelete' %}", {'values': JSON.stringify(data)}, function(data){
+                var count = $('.count').text();
+                  $('.count').text(count-data['count']);
+              })
+                
+                //捉到所有被选中的，发异步进行删除
+                layer.msg('删除成功', {icon: 1});
+
+                $(".layui-form-checked").not('.header').parents('tr').remove();
+            });
+          }
       }
+      // 模态框
+      $('.add-rule-btn').click(function(){
+        layui.use(['layer'],function () {
+                var layer = layui.layer,$=layui.$;
+                layer.open({
+                    type:1,//类型
+                    area:['400px','400px'],//定义宽和高
+                    title:'查看详细信息',//题目
+                    shadeClose:false,//点击遮罩层关闭
+                    content: $('.rule-motaikuang'),//打开的内容,
+                });
+            })
+      });
+      // 模态框退出
+      $('.quit').click(function(){
+        layui.use(['layer'],function () {
+        var layer = layui.layer,$=layui.$;
+        layer.closeAll(); 
+          })
+      });
     </script>
  {% endblock %}

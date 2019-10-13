@@ -13,7 +13,7 @@ class MyMiddleware(MiddlewareMixin):
         # 获取当前请求的路由
         request_url = request.path
         # 设置路由白名单,任何人可以访问, 登录注册 和 后台登录
-        valid_urls = ['/', '/admin/(.*)', '/error',]
+        valid_urls = ['/', '/admin/(.*)', '/error', '/manage/shareLogin','/manage/shareform', '/error/sharegetclass']
         for url in valid_urls:
             result = re.match("^%s$"%url, request_url)
             if result:

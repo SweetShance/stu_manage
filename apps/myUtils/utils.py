@@ -21,9 +21,14 @@ def aboout_sno_message(sno):
     zh_fields_list = search_zh_fields_list(fields_list)
     # 返回 字段名和游标
     # 三表联合查询数据
-    search_sentence = "select %s from stu_table_stu_base_message A inner join stu_table_stu_class B on A.stu_class_id = B.id inner join stu_table_coolege C on B.coolege_name_id = C.id where A.sno=%s" %(field_list_str, sno);
+    # search_sentence = "select %s from stu_table_stu_base_message A inner join stu_table_stu_class B on A.stu_class_id = B.id inner join stu_table_coolege C on B.coolege_name_id = C.id where A.sno=%s" %(field_list_str, sno);
+    search_sentence = "select %s from stu_table_stu_base_message A left join stu_table_stu_class B on A.stu_class_id = B.id left join stu_table_coolege C on B.coolege_name_id = C.id where A.sno=%s" %(field_list_str, sno);
     cur.execute(search_sentence)
-    data_tuple = cur.fetchall()[0]
+    this_data = cur.fetchall()
+    if this_data:
+        data_tuple = this_data[0]
+    else:
+        data_tuple = ()
     cur.close()
     conn.close()
     return zh_fields_list, data_tuple
