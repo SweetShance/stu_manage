@@ -10,7 +10,7 @@ class Profile(AbstractUser):
     user_role = models.ForeignKey('User_role', verbose_name='身份', \
         on_delete=models.DO_NOTHING, null=True, blank=True, related_name="username")
     class Meta:
-        verbose_name_plural = '管理员'
+        verbose_name_plural = '所有用户'
     
 # 班长用户表
 class Monitor(Profile):

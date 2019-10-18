@@ -51,6 +51,24 @@ class LogOut(View):
 class Register(View):
     def post(self, request):
         data = {}
+        # 注册用户
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        email = request.POST.get('email')
+        name = request.POST.get('name')
+        role = User_role.objects.get(role_name="学生")
+        user = Profile.objects.filter(username=username)
+        if user:
+            data['status'] = "用户名已存在"
+        else:
+            user = Profile.objects.filter(email = email)
+            if user:
+                data['status'] = '该邮箱已被注册'
+            else:   
+                user = Profile.objects.create(username=username,password=password, email=email, name=name, user_role=role)
+                login(request, user)
+                data['status'] = '注册成功'
+                data['username'] = username
         return JsonResponse(data)
 
 

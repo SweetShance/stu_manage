@@ -18,12 +18,13 @@ from django.urls import path, include
 from django.conf.urls.static import static   # 新加入 
 from django.conf import settings             # 新加入 
 from .views import Index, Welcome, AdminManagement, RoleManagement, Permiclassify, PermiManagement, \
-    Login, PermissionAdd, PermissionDelete, PermissionEdit, RoleDelete, RoleAdd, RoleEdit, LogOut
+    Login, PermissionAdd, PermissionDelete, PermissionEdit, RoleDelete, RoleAdd, RoleEdit, LogOut, Register
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', Login.as_view(), name="login"),
     path('logout', LogOut.as_view(), name="logout"),
+    path('register', Register.as_view(), name="register" ),
     path('index', Index.as_view(), name="index"),
     path('welcome', Welcome.as_view(), name="welcome"),
     path('manage/', include('stu_table.urls')),

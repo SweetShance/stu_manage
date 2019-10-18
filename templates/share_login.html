@@ -17,11 +17,14 @@
 <body>
 <div id="wrapper" class="login-page">
 <div id="login_form" class="form">
-<form class="register-form">
+<form class="register-form layui-form">
 	<h2>创建用户</h2>
-<input type="text" placeholder="用户名" value="admin" id="r_user_name" />
-<input type="password" placeholder="密码" id="r_password" />
-<input type="text" placeholder="电子邮件" id="r_emial" />
+<input type="text" placeholder="输入学号作为用户名" id="r_user_name" />
+<input type="text" placeholder="输入姓名" id="r_name" />
+<input type="password" placeholder="密码" id="r_password" required lay-verify="required" />
+<input type="password" placeholder="确认密码" id="r_passwordAgain" lay-verify="required" />
+<input type="text" placeholder="电子邮件" id="r_email"  lay-verify="required"/>
+
 <button id="create">创建账户</button>
 <p class="message">已经有了一个账户? <a href="#">立刻登录</a></p>
 </form>
@@ -81,23 +84,54 @@
 		
 	});
 	function check_register(){
-		var name = $("#r_user_name").val();
+		var username = $("#r_user_name").val();
 		var pass = $("#r_password").val();
-		var email = $("r_email").val();
-		if(name!="" && pass=="" && email != "")
-		 {
-		  alert("注册成功！");
-		  $("#user_name").val("");
-		  $("#password").val("");
-		 }
-		 else
-		 {
-		  $("#login_form").removeClass('shake_effect');  
-		  setTimeout(function()
-		  {
-		   $("#login_form").addClass('shake_effect')
-		  },1);  
-		 }
+		var name = $("#r_name").val();
+		var passAgain = $("#r_passwordAgain").val();
+		var email = $("#r_email").val();
+		var myreg2 = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
+		if(username == ""){
+			layer.msg('用户名不能为空', {icon: 5});
+		}else if(name == ""){
+			layer.msg('名字不能为空', {icon: 5});
+		}else if(pass=="" || passAgain==""){
+			layer.msg('密码不能为空', {icon: 5});
+		}else if(email == ""){
+			layer.msg('邮箱不能为空', {icon: 5});
+		}else if(myreg2.test(email)){
+			if(pass == passAgain){
+				if(pass.length >= 6){
+					$.post('/register',{'username': username, 'password': pass, "email": email, 'name': name}, function(data){
+						if(data.status == "注册成功"){
+							location.href = '/manage/shareform?sno='+data.username
+						}else{
+							layer.msg(data.status, {icon: 5});
+						}
+					} )
+				}else{
+					layer.msg('密码必须6位以上', {icon: 5});
+				}
+			}else{
+				layer.msg('两次密码不一致', {icon: 5});
+			}
+
+		}else{
+			layer.msg('邮箱格式不正确', {icon: 5});
+		}
+		// if(name!="" && pass=="" && email != "")
+		//  {
+		//   alert("注册成功！");
+		//   $("#user_name").val("");
+		//   $("#password").val("");
+		//  }
+		//  else
+		//  {
+		//   $("#login_form").removeClass('shake_effect');  
+		//   setTimeout(function()
+		//   {
+		//    $("#login_form").addClass('shake_effect')
+		//   },1);  
+		//  }
 	}
 	$(function(){
 		$("#create").click(function(){
