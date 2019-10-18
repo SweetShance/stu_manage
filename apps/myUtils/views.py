@@ -317,5 +317,4 @@ class CombinedExcel(View):
         return render(request, template_name="html/manyExcel.html", context={})
     
     def post(self, request):
-       
         return JsonResponse({'status': 'yes'})
