@@ -9,7 +9,7 @@
         <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除数据</button>
         <button class="layui-btn" onclick="openModak()"><i class="layui-icon"></i>添加学生</button>
         <button class="layui-btn add-field" onclick="addField()"><i class="layui-icon"></i>添加字段</button>
-        <button class="layui-btn selectField"><i class="layui-icon">&#xe641;</i>选择字段导出excel</button>
+        <button class="layui-btn selectField"><i class="layui-icon"></i>选择字段导出excel</button>
         <button class="layui-btn share"><i class="layui-icon">&#xe641;</i>分享</button>
         <span class="x-right" style="line-height:40px">共有数据：<span class="count">{{ count }}</span> 条</span>
       </xblock>
@@ -194,16 +194,32 @@
                   layer1.find(".layui-layer-content").prepend('<div style="margin-bottom: 15px;">字符:1, 数字: 2, 日期:3, 布尔: 4</div>')
                 }
                 }, function(type, index){
-                  $.post("{% url 'myUtils:addfield' %}",{'text': text, "type": type }, function(obj){
-                    if (obj.status == "成功"){
-                      console.log('yes')
-                      layer.msg('添加成功', {icon: 1});
-                      $('.about_data_list').load("{% url 'stu_table:stu_data_list' %}");
-                    }else{
-                      layer.msg(''+obj.status, {icon: 5});
-                    }
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'myUtils:addfield' %}",
+                    data: {'text': text, "type": type },
+                    success:function(data){
+                      console.log(data)
+                      if (data.static == "成功"){
+                        layer.msg('添加成功', {icon: 1});
+                        $('.about_data_list').load("{% url 'stu_table:stu_data_list' %}");
+                      }else{
+                        layer.msg(''+data.static, {icon: 5});
+                      }
                       
-                  }, 'json')
+                    }
+                  });
+                  // $.post("{% url 'myUtils:addfield' %}",{'text': text, "type": type }, function(data){
+                  //   alert(result)
+                  //   if (data.status == "成功"){
+                  //     console.log('yes')
+                  //     layer.msg('添加成功', {icon: 1});
+                  //     $('.about_data_list').load("{% url 'stu_table:stu_data_list' %}");
+                  //   }else{
+                  //     layer.msg(''+data.status, {icon: 5});
+                  //   }
+                      
+                  // })
               layer.close(index);
               });
             // $.post("{% url 'myUtils:addfield' %}",{'text': text}, function(obj){
@@ -220,9 +236,21 @@
         });
         $('.share').click(function(){
           layer.prompt({
-                title: '填写您字段的类型(填数字)，并确认',
+                title: '复值链接',
                 id:'sharetext',
                 value: 'http://127.0.0.1:8000/manage/shareLogin',
+                btn:["复制"],
+                yes: function(index){
+                  var Url2=$('.layui-layer-input').val();
+                  var oInput = document.createElement("input");
+                  oInput.value = Url2;
+                  document.body.appendChild(oInput);
+                  oInput.select(); // 选择对象
+                  document.execCommand("Copy"); // 执行浏览器复制命令
+                  oInput.className = "oInput";
+                  oInput.style.display = "none";
+                  layer.msg('复制成功',{icon:1,time:1000});
+                },
                 success: function(layer0, index){
                   $('#sharetext input').attr("readOnly", "readOnly");
                 },

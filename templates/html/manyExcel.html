@@ -3,9 +3,12 @@
 {% block title %} 数据导入 {% endblock %}
 {% block link %} <link rel="stylesheet" href="{% static 'stu_table/css/style.css' %}">{% endblock %}
 {% block content %}
-<body class="form-wrap">
-          
+<body class="form-wrap">      
 <div class=" layui-fluid  layui-bg-white">
+
+<form action="" enctype="multipart/form-data">
+  <input type="file" name="" multiple="true" id="">
+</form>
 <blockquote class="layui-elem-quote">为节省服务器开销，以下示例均未配置真实上传接口，所以每次上传都会报提示：请求上传接口出现异常，这属于正常现象。</blockquote>   
 <div class="layui-upload">
   <button type="button" class="layui-btn layui-btn-normal" id="testList">选择多文件</button> 
@@ -20,7 +23,7 @@
       <tbody id="demoList"></tbody>
     </table>
   </div>
-  <button type="button" class="layui-btn" id="testListAction">开始上传</button>
+  <button type="button" class="layui-btn"  id="testListAction">开始上传</button>
 </div> 
 </div>
 {% endblock %}       
@@ -70,7 +73,6 @@ layui.use('upload', function(){
           tr.remove();
           uploadListIns.config.elem.next()[0].value = ''; //清空 input file 值，以免删除后出现同名文件不可选
         });
-        
         demoListView.append(tr);
       });
     }
@@ -88,21 +90,19 @@ layui.use('upload', function(){
     ,error: function(index, upload){
       var tr = demoListView.find('tr#upload-'+ index)
       ,tds = tr.children();
-      tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
-      tds.eq(3).find('.demo-reload').removeClass('layui-hide'); //显示重传
     }
   });
   
   //绑定原始文件域
-  upload.render({
-    elem: '#test20'
-    ,url: '/upload/'
+  // upload.render({
+  //   elem: '#test20'
+  //   ,url: '/upload/'
     
-    ,done: function(res){
-      console.log(res)
-    }
+  //   ,done: function(res){
+  //     console.log(res)
+  //   }
   });
   
-});
+// });
 </script>
 {% endblock %}

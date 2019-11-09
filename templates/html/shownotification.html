@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+
+  <body>
+    <div class="x-body" style="width: 90%; margin-top: 30px;">
+        <div class="layui-card">
+        <div class="layui-card-header" style="background: gray;">{{ obj }}&nbsp;&nbsp;  发布时间:&nbsp; {{ obj.update_time }}</div>
+        <div class="layui-card-body">
+            <div class="content">
+                    {{ obj.content }}
+            </div>
+            
+            <div class="about" style="margin-top: 30px;">
+                <span class="x-red" > 相关文件 </span><br>
+                <a href="{% url 'myUtils:download' %}?id={{ obj.pk }}" class="download" style="color:dodgerblue;">{{ obj.about_file }} </a>
+            </div>
+        </div>
+        </div>
+    </div>
+  </body>
+{% endblock %}
+{% block script %}
+{% endblock %}

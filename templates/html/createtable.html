@@ -1,0 +1,23 @@
+
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} 生成表格 {% endblock %}
+{% block link %} <link rel="stylesheet" href="{% static 'stu_table/css/style.css' %}"> {% endblock %}
+{% block content %}
+<div style="width: 90%; height: 500px !important;">
+    <form class="layui-form" method="post" action="{% url 'myUtils:createtable' %}">
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">内容</label>
+            <div class="layui-input-block text-content">
+            <textarea name="desc" placeholder="例如:0 张三 230160001 女 计科162 河北省邢台市沙河市 25 162 " class="layui-textarea text"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn submit" lay-submit lay-filter="formDemo">立即提交</button>
+            <button type="reset" class="layui-btn layui-btn-primary reset">重置</button>
+        </div>
+        </div>
+    </form>   
+</div>
+{% endblock %}

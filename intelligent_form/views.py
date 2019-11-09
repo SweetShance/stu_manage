@@ -6,6 +6,7 @@ from django.db.models import Max
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from myUtils.utils import session_add_permission
+from myUtils.models import Notification
 from user.models import Permission,User_role, Profile
 from stu_table.utils import paginator_utils
 from .forms import LoginForm
@@ -75,10 +76,8 @@ class Register(View):
 class Index(View):
     def get(self, request):
         # if request.user.is_authenticated:
-        #     print('yes')
+        
         return render(request, template_name="index.html", context={})
-        # else:
-        #     return redirect('/')
 
     def post(self, request):
         return render(request, template_name="index.html", context={})
@@ -87,7 +86,13 @@ class Index(View):
 
 class Welcome(View):
     def get(self, request):
-        return render(request, template_name="html/welcome.html", context={})
+        user = Profile.objects.get(username=request.user)
+        notification = Notification.objects.filter(is_active=True).order_by('-update_time')[:5]
+        context = {
+            "user":user,
+            "notification": notification
+        }
+        return render(request, template_name="html/welcome.html", context=context)
     
 
 

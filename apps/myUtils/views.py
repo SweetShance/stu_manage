@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.views.generic import View
 from django.core import serializers
+from django.utils.encoding import escape_uri_path
 import numpy as np
 import xlwt
 from io import BytesIO
@@ -9,6 +10,7 @@ from stu_table.utils import ExcelOperate
 from stu_table.models import Coolege, Stu_class, Stu_base_message, Transition, File
 from user.models import Monitor, Teacher
 from .utils import aboout_sno_message, new_conn_mysql, search_fields_list
+from .models import Notification
 
 
 
@@ -230,7 +232,6 @@ class AddField(View):
             #查询当前字段自否已经在转换列表中了
             transObj = Transition.objects.filter(zh_name=field)
             if transObj:
-                print(transObj)
                 # 判断当前字段是否已经存在已有字段中了
                 # 链接数据库
                 conn = new_conn_mysql()
@@ -244,13 +245,14 @@ class AddField(View):
                 else:
                     ex = ExcelOperate()
                     ex.create_field(transObj.first().eng_name, this_type)
+                    data['static'] = "成功"
             else:
                 ex = ExcelOperate()
                 # 翻译
                 eng_name = ex.transition(field)
                 ex.insert_transform_table(eng_name, field)
                 ex.create_field(eng_name, this_type)
-                data['static'] = '成功'
+                data['static'] = "成功"
             
         #
         return JsonResponse(data)
@@ -317,4 +319,55 @@ class CombinedExcel(View):
         return render(request, template_name="html/manyExcel.html", context={})
     
     def post(self, request):
+        print(request.FILES)
         return JsonResponse({'status': 'yes'})
+
+
+class CreateTable(View):
+    def get(self, request):
+        return render(request, template_name="html/createtable.html", context={})
+
+    def post(self, request):
+        text = request.POST.get('desc')
+        if text:
+            #指定数据类型
+            response = HttpResponse(content_type='application/ms-excel')
+            # 设置文件名
+            response['Content-Disposition'] =  'attachment; filename="result.xls"'
+            # 创建工作薄    
+            wb = xlwt.Workbook(encoding='utf-8')
+            # 创建表
+            ws = wb.add_sheet("new sheet")
+            font_style = xlwt.XFStyle()
+            # 指定二进制
+            font_style.font.bold = True
+            # 写入表格
+            text_rows = text.split("\n")
+            for row, row_data in enumerate(text_rows):
+                row_data = row_data.strip().split(" ")
+                for col, col_data in enumerate(row_data):
+                    ws.write(row, col, col_data, font_style)
+            font_style = xlwt.XFStyle()
+            wb.save(response)
+        return response
+
+
+class ShowNotification(View):
+    def get(self, request): 
+        id = request.GET.get('id')
+        obj = Notification.objects.get(pk=id)
+        return render(request, 'html/shownotification.html', {"obj": obj})
+
+
+class Download(View):
+    def get(self, request):
+        id = request.GET.get('id')
+        if id:
+            obj = Notification.objects.get(pk=id)
+            this_file = obj.about_file
+            print(this_file.path)
+            file = open(str(this_file.path), 'rb')
+            response =HttpResponse(this_file)  
+            response['Content-Type']='application/octet-stream'  
+            response['Content-Disposition']='attachment;filename="%s"'%(escape_uri_path(str(file.name).split('/')[-1]))
+            return response 

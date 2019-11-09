@@ -1,6 +1,6 @@
 from django.urls import path
 # from .views import Welcome
-from .views import Error, Delete_data, Alert_stu_data, GetClass, GetColleges, AddStu, AddField, ImportDataToexcel, Search, ShareGetClass, CombinedExcel
+from .views import Error, Delete_data, Alert_stu_data, Download, GetClass, ShowNotification, GetColleges, AddStu, AddField, ImportDataToexcel, CreateTable, Search, ShareGetClass, CombinedExcel
 app_name = 'myUtils'
 urlpatterns = [
     path('', Error.as_view(), name='error'),
@@ -13,5 +13,9 @@ urlpatterns = [
     path('/search', Search.as_view(), name='serch'),
     path('/sharegetclass', ShareGetClass.as_view(), name="sharegetclass"),
     path('/combined', CombinedExcel.as_view(), name="combined"),
-    path('/import', ImportDataToexcel.as_view(), name='import')
+    path('/import', ImportDataToexcel.as_view(), name='import'),
+    path('/createtable', CreateTable.as_view(), name="createtable"),
+    path('/shownotification', ShowNotification.as_view(), name="shownotification"),
+    path('/download', Download.as_view(), name="download")
+
 ]
